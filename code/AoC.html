@@ -377,6 +377,32 @@ library(stringi)</code></pre>
 day_1</code></pre>
 <pre><code>##   sum(cal_val)
 ## 1        53334</code></pre>
+<div id="part-2" class="section level3">
+<h3>part 2</h3>
+<pre class="r"><code>alphas &lt;- (&quot;one|two|three|four|five|six|seven|eight|nine&quot;)
+
+day1_part2 &lt;- read.csv(&quot;../data/day_1.csv&quot;, header = F) %&gt;% 
+  mutate(first_dig = stri_locate_first(V1, regex = &quot;\\d&quot;)[,1],
+         last_dig = stri_locate_last(V1, regex = &quot;\\d&quot;)[,1],
+         first_alph = replace_na(stri_locate_first(V1, regex = alphas)[,1],1000),
+         last_alph = replace_na(stri_locate_last(V1, regex = alphas)[,2], 0),
+         first_num = if_else(first_dig&lt;first_alph, 
+                             str_sub(V1, first_dig, first_dig), #if first value is digit
+                             str_sub(V1,  first_alph, 
+                                     stri_locate_first(V1, regex = alphas)[,2])),
+         first_cal = case_match(first_num,  &quot;one&quot; ~ &quot;1&quot;, &quot;two&quot;~&quot;2&quot;, &quot;three&quot;~&quot;3&quot;, &quot;four&quot;~&quot;4&quot;, &quot;five&quot;~&quot;5&quot;, &quot;six&quot;~&quot;6&quot;, &quot;seven&quot;~&quot;7&quot;, &quot;eight&quot;~&quot;8&quot;, &quot;nine&quot;~&quot;9&quot;, .default = first_num),
+         
+         last_num = if_else(last_dig&gt;last_alph, 
+                            str_sub(V1, last_dig, last_dig),
+                            str_sub(V1, stri_locate_last(V1, regex = alphas)[,1],last_alph)),
+         last_cal = case_match(last_num,  &quot;one&quot; ~ &quot;1&quot;, &quot;two&quot;~&quot;2&quot;, &quot;three&quot;~&quot;3&quot;, &quot;four&quot;~&quot;4&quot;, &quot;five&quot;~&quot;5&quot;, &quot;six&quot;~&quot;6&quot;, &quot;seven&quot;~&quot;7&quot;, &quot;eight&quot;~&quot;8&quot;, &quot;nine&quot;~&quot;9&quot;, .default = last_num),
+         cal_val = as.numeric(str_c(first_cal,last_cal))) %&gt;% 
+  summarise(sum(cal_val))
+
+day1_part2</code></pre>
+<pre><code>##   sum(cal_val)
+## 1        52834</code></pre>
+</div>
 </div>
 </div>
 

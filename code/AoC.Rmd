@@ -28,3 +28,29 @@ day_1 <- read.csv("../data/day_1.csv", header = F) %>%
 day_1
 
 ```
+### part 2
+
+```{r Day1_2}
+alphas <- ("one|two|three|four|five|six|seven|eight|nine")
+
+day1_part2 <- read.csv("../data/day_1.csv", header = F) %>% 
+  mutate(first_dig = stri_locate_first(V1, regex = "\\d")[,1],
+         last_dig = stri_locate_last(V1, regex = "\\d")[,1],
+         first_alph = replace_na(stri_locate_first(V1, regex = alphas)[,1],1000),
+         last_alph = replace_na(stri_locate_last(V1, regex = alphas)[,2], 0),
+         first_num = if_else(first_dig<first_alph, 
+                             str_sub(V1, first_dig, first_dig), #if first value is digit
+                             str_sub(V1,  first_alph, 
+                                     stri_locate_first(V1, regex = alphas)[,2])),
+         first_cal = case_match(first_num,  "one" ~ "1", "two"~"2", "three"~"3", "four"~"4", "five"~"5", "six"~"6", "seven"~"7", "eight"~"8", "nine"~"9", .default = first_num),
+         
+         last_num = if_else(last_dig>last_alph, 
+                            str_sub(V1, last_dig, last_dig),
+                            str_sub(V1, stri_locate_last(V1, regex = alphas)[,1],last_alph)),
+         last_cal = case_match(last_num,  "one" ~ "1", "two"~"2", "three"~"3", "four"~"4", "five"~"5", "six"~"6", "seven"~"7", "eight"~"8", "nine"~"9", .default = last_num),
+         cal_val = as.numeric(str_c(first_cal,last_cal))) %>% 
+  summarise(sum(cal_val))
+
+day1_part2
+
+```
