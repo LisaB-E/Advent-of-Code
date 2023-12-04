@@ -1,0 +1,30 @@
+---
+title: "AOC"
+author: "LBE"
+date: "2023-12-04"
+output: html_document
+---
+
+# Advent of Code
+
+## Setup
+
+```{r message = FALSE}
+library(tidyverse)
+library(stringi)
+```
+
+## 1st Advent
+
+```{r day1}
+day_1 <- read.csv("../data/day_1.csv", header = F) %>% 
+  mutate(first = stri_locate_first(V1, regex = "\\d")[,1],
+         last = stri_locate_last(V1, regex = "\\d")[,1],
+         num_f = str_sub(V1, first, first),
+         num_l = str_sub(V1, last, last),
+         cal_val = as.numeric(str_c(num_f,num_l))) %>% 
+  summarise(sum(cal_val))
+
+day_1
+
+```
