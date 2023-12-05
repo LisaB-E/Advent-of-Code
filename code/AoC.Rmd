@@ -12,6 +12,9 @@ output: html_document
 ```{r message = FALSE}
 library(tidyverse)
 library(stringi)
+library(stringr)
+library(readxl)
+library(here)
 ```
 
 ## 1st Advent
@@ -52,5 +55,77 @@ day1_part2 <- read.csv("../data/day_1.csv", header = F) %>%
   summarise(sum(cal_val))
 
 day1_part2
+
+```
+
+## 2nd Advent
+
+``` {r Day2}
+day_2 <- read_xlsx(here("data","AoC.xlsx" ), sheet = "day_2", col_names = F) %>% 
+  rename("game" = "...1") %>% 
+  separate_wider_delim(game, delim=":", names = c("game", "outcomes")) %>% 
+  separate_longer_delim(outcomes, delim = ";") %>% 
+  group_by(game) %>% 
+  mutate(sub = 1:length(game)) %>% 
+  ungroup() %>% 
+  separate_wider_delim(outcomes, delim = ",", names = c("col1", "col2", "col3"), too_few = "align_start") %>% 
+  separate_wider_delim(col1, delim = " ", names = c(NA, "count1", "colour1")) %>% 
+  separate_wider_delim(col2, delim = " ", names = c(NA, "count2", "colour2")) %>% 
+  separate_wider_delim(col3, delim = " ", names = c(NA, "count3", "colour3")) %>% 
+  rename("count" = "count1", "colour" = "colour1") 
+
+sub2 <- day_2 %>% 
+  select(game, sub, count2, colour2) %>% 
+  rename("count" = "count2", "colour" = "colour2")
+
+sub3 <- day_2 %>% 
+  select(game, sub, count3, colour3) %>% 
+  rename("count" = "count3", "colour" = "colour3")
+  
+day_2_unstacked <- day_2 %>% 
+  select(game, sub, count, colour) %>% 
+  add_row(sub2) %>% 
+  add_row(sub3) %>% 
+  separate_wider_delim(game, delim=" ", names = c(NA, "game")) %>% 
+  mutate(game = as.numeric(game),
+         count = as.numeric(count),
+         pass = if_else(colour == 'red',
+                        true = if_else(count<=12,
+                                       true = 0,
+                                       false = 1),
+                        false = if_else(colour == "green",
+                                        true = if_else(count<=13,
+                                                       true = 0,
+                                                       false = 1),
+                                        false = if_else(colour == "blue",
+                                                        true = if_else(count<=14,
+                                                                       true = 0,
+                                                                       false = 1),
+                                                        false = 1000)))) %>% 
+  group_by(game) %>% 
+  summarise(passed = sum(pass, na.rm = T)) %>% 
+  filter(passed==0) %>% 
+  summarise(answer = sum(game))
+
+```
+### part 2
+
+```{r day2_part2}
+day_2_part2 <- day_2 %>% 
+  select(game, sub, count, colour) %>% 
+  add_row(sub2) %>% 
+  add_row(sub3) %>% 
+  separate_wider_delim(game, delim=" ", names = c(NA, "game")) %>% 
+  mutate(game = as.numeric(game),
+         count = as.numeric(count)) %>% 
+  group_by(game, colour) %>% 
+  summarise(max_count = max(count, na.rm = T)) %>% 
+  filter(!is.na(colour)) %>% 
+  group_by(game) %>% 
+  pivot_wider(names_from = colour, values_from = max_count) %>% 
+  summarise(power = red*green*blue) %>% 
+  ungroup() %>% 
+  summarise(answer = sum(power))
+  
 
 ```
